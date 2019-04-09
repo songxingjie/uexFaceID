@@ -15,7 +15,7 @@ static const NSInteger kUexFaceIDNotAvailable = -6; // -6 = LAErrorTouchIDNotAva
 
 @implementation EUExFaceID
 
-//校验当前应用是否支持面部识别
+//校验当前应用是否支持面部识别 (检验是否系统支持FaceID:canEvaluatePolicy)
 - (NSNumber *)canAuthenticateForFaceID:(NSMutableArray *)inArguments{
     ACArgsUnpack(NSDictionary *info) = inArguments;
     NSNumber *mode = numberArg(info[@"mode"]);
@@ -36,13 +36,36 @@ static const NSInteger kUexFaceIDNotAvailable = -6; // -6 = LAErrorTouchIDNotAva
     
     if(![ctx canEvaluatePolicy:policy error:&error]){
         ACLogDebug(@"FaceID is unavailable: %@",error.localizedDescription);
+        NSLog(@"canAuthenticateForFaceID canEvaluatePolicy =========== error.code = %ld",error.code);
         return @(error.code);
     }
 
     return @(kUexFaceIDNoError);
 }
 
-//开始面部验证
+/*
+ error.code  :
+      1.LAErrorAuthenticationFailed   身份验证失败
+ 
+      2.LAErrorUserCancel   用户在认证时点击取消
+ 
+      3.LAErrorUserFallback 用户点击输入密码取消指纹验证
+ 
+      4.LAErrorSystemCancel 身份认证被系统取消(按下Home键或电源键)
+ 
+      5.LAErrorTouchIDNotEnrolled  用户未录入指纹
+ 
+      6.LAErrorPasscodeNotSet 设备未设置密码
+ 
+      7.LAErrorTouchIDNotAvailable  该设备为设置FaceID
+ 
+      8.LAErrorTouchIDLockout   连续五次密码错误,FaceID被锁定.
+ 
+      9.LAErrorAppCancel 用户不能控制情况下App被挂起
+ 
+ */
+
+//开始面部验证(验证FaceID是否通过evaluatePolicy)
 - (void)authenticateWithFaceID:(NSMutableArray *)inArguments{
     ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
     
@@ -70,6 +93,7 @@ static const NSInteger kUexFaceIDNotAvailable = -6; // -6 = LAErrorTouchIDNotAva
     if (![ctx canEvaluatePolicy:policy error:&error]) {
         //不支持面部识别
         callback(error.code);
+         NSLog(@"authenticateWithFaceID canEvaluatePolicy =========== error.code = %ld",error.code);
         return;
     }
     [ctx evaluatePolicy:policy localizedReason:hint reply:^(BOOL success, NSError * _Nullable error) {
@@ -79,6 +103,7 @@ static const NSInteger kUexFaceIDNotAvailable = -6; // -6 = LAErrorTouchIDNotAva
         }else{
             //验证失败，或取消验证
             callback(error.code);
+            NSLog(@"authenticateWithFaceID evaluatePolicy =========== error.code = %ld",error.code);
         }
     }];
 }
