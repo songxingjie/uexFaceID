@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFaceID" version="4.0.0" build="1">
-        <info>0:FaceID功能插件</info>
+        uexName="uexFaceID" version="4.0.2" build="1">
+        <info>2:完善面部识别逻辑，修改识别属性</info>
+        <build>1.1:修复打包失败问题</build>
+        <build>1:修改Product Name，解决插件打不进包bug</build>
+        <build>0:FaceID功能插件</build>
     </plugin>
 </uexplugins>
